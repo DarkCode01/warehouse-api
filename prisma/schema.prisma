@@ -15,6 +15,7 @@ model Warehouse {
   updated_at DateTime @updatedAt
   aisles     Aisle[]
   bins       Bin[]
+  plans      AuditPlan[]
 
   @@map("warehouses")
 }
@@ -101,6 +102,8 @@ model AuditPlan {
   status      PlanStatus @default(ACTIVE)
   created_at   DateTime   @default(now())
   updated_at   DateTime   @updatedAt
+  warehouse_id String
+  warehouse    Warehouse @relation(fields: [warehouse_id], references: [id], onDelete: Cascade)
 
   tasks       AuditTask[]
   
@@ -142,13 +145,11 @@ model AuditResult {
   id            String      @id @default(uuid())
   taskId        String
   bin_id         String
-  expectedCount Int
-  actualCount   Int
+  expected_count Int
+  actual_count   Int
   discrepancy   Int
   status        AuditStatus
   notes         String?
-  auditedBy     String?
-  auditedAt     DateTime    @default(now())
   
   task          AuditTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
   bin           Bin       @relation(fields: [bin_id], references: [id], onDelete: Cascade)
