@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// ============= Storage Structure =============
+
+model Warehouse {
+  id        String   @id @default(uuid())
+  name      String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  aisles    Aisle[]
+  bins      Bin[]
+  
+  @@map("warehouses")
+}
+
+model Aisle {
+  id          String   @id @default(uuid())
+  code        String   
+  name        String   
+  warehouse_id String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  warehouse   Warehouse @relation(fields: [warehouse_id], references: [id], onDelete: Cascade)
+  racks       Rack[]
+  
+  @@map("aisles")
+}
+
+model Rack {
+  id        String   @id @default(uuid())
+  number    Int
+  aisleId   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  aisle     Aisle @relation(fields: [aisleId], references: [id], onDelete: Cascade)
+  bins      Bin[]
+  
+  @@map("racks")
+}
+
+model Bin {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  position      Int
+  rack_id        String
+  warehouse_id   String
+
+  pallet_count   Int       @default(0)
+  capacity      Int       @default(10)
+
+  last_audit_date DateTime?
+
+  risk_score        Int @default(0) // (0-100)
+  audit_factor      Int @default(0) // (0-50)
+  activity_factor   Int @default(0) // (0-30)
+  adjustment_factor Int @default(0) // (0-20)
+
+  is_active      Boolean   @default(true)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  rack          Rack      @relation(fields: [rack_id], references: [id], onDelete: Cascade)
+  warehouse     Warehouse @relation(fields: [warehouse_id], references: [id], onDelete: Cascade)
+  
+  @@map("bins")
+}
+
