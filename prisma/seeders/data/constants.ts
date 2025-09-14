@@ -4,15 +4,18 @@ export const CONSTANTS = {
     SIMULATION_DAYS: 30,
     MAX_AUDIT_DAYS: 90,
   },
+
   WAREHOUSE: {
     RACKS_PER_AISLE: 2,
     BINS_PER_RACK: 5,
     BIN_CAPACITY: 8,
   },
+
   ACTIVITIES: {
     MIN_PER_DAY: 8,
     MAX_PER_DAY: 22,
   },
+
   RISK_SCORING: {
     MAX_AUDIT_FACTOR: 50,
     MAX_ACTIVITY_FACTOR: 30,

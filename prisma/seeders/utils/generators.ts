@@ -1,17 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-// import { ActivityType, Bin } from 'generated/prisma';
-import { CONSTANTS } from './constants';
-import {
-  generateRandomDate,
-  generateRandomNumber,
-  shouldHaveAuditDate,
-} from './utils';
+import type { ActivityType, Bin } from 'generated/prisma';
+import { CONSTANTS } from '../data/constants';
 
-// ==================== DATA GENERATORS ====================
-export const generateRackData = (rackNumber: number, aisleId: string) => ({
-  number: rackNumber,
-  aisleId,
-});
+export const generateRandomNumber = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+export const generateRandomDate = (daysAgo: number): Date => {
+  const baseDate = Date.now() - daysAgo * CONSTANTS.TIME.ONE_DAY_MS;
+  const randomOffset = Math.random() * CONSTANTS.TIME.ONE_DAY_MS;
+  return new Date(baseDate - randomOffset);
+};
+
+export const shouldHaveAuditDate = (): boolean => Math.random() > 0.4;
 
 export const generateBinCode = (
   aisleCode: string,
@@ -21,27 +21,9 @@ export const generateBinCode = (
   return `${aisleCode}${rackNumber}-${position.toString().padStart(2, '0')}`;
 };
 
-export const generateBinData = (
-  binCode: string,
-  position: number,
-  rackId: string,
-  warehouseId: string,
-) => ({
-  code: binCode,
-  position,
-  rack_id: rackId,
-  warehouse_id: warehouseId,
-  pallet_count: generateRandomNumber(1, 6),
-  capacity: CONSTANTS.WAREHOUSE.BIN_CAPACITY,
-  last_audit_date: shouldHaveAuditDate()
-    ? generateRandomDate(generateRandomNumber(1, 60))
-    : null,
-  is_active: true,
-});
-
 export const generateActivityData = (
   activityType: string,
-  randomBin: any,
+  randomBin: Bin,
   activityDate: Date,
 ) => {
   const activityConfigs = {
@@ -67,7 +49,7 @@ export const generateActivityData = (
 
   return {
     bin_id: randomBin.id,
-    type: activityType as any,
+    type: activityType as ActivityType,
     quantity: config.quantity,
     notes: config.notes,
     created_at: activityDate,
