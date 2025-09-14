@@ -7,5 +7,6 @@ import { BinsService } from './bins.service';
   controllers: [BinsController],
   providers: [BinsService],
   imports: [DatabaseModule],
+  exports: [BinsService],
 })
 export class BinsModule {}

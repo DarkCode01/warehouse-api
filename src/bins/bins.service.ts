@@ -30,4 +30,47 @@ export class BinsService {
       data: updateBinDto,
     });
   }
+
+  // By warehouse
+  findAllByWarehouse(warehouseId: string) {
+    return this.dbService.bin.findMany({
+      where: { warehouse_id: warehouseId, is_active: true },
+      select: {
+        id: true,
+        code: true,
+        position: true,
+        risk_score: true,
+        pallet_count: true,
+        capacity: true,
+        rack: {
+          select: {
+            number: true,
+            aisle: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        {
+          rack: {
+            aisle: {
+              code: 'asc',
+            },
+          },
+        },
+        {
+          rack: {
+            number: 'asc',
+          },
+        },
+        {
+          position: 'asc',
+        },
+      ],
+    });
+  }
 }
