@@ -7,6 +7,7 @@ import { RacksModule } from './racks/racks.module';
 import { WarehousesModule } from './warehouses/warehouses.module';
 import { AuditTasksModule } from './audit-tasks/audit-tasks.module';
 import { AuditResultsModule } from './audit-results/audit-results.module';
+import { RiskScoreModule } from './risk-score/risk-score.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuditResultsModule } from './audit-results/audit-results.module';
     AuditPlansModule,
     AuditTasksModule,
     AuditResultsModule,
+    RiskScoreModule,
   ],
   controllers: [],
   providers: [],

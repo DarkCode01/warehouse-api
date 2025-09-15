@@ -7,5 +7,6 @@ import { BinActivitiesService } from './bin-activities.service';
   controllers: [BinActivitiesController],
   providers: [BinActivitiesService],
   imports: [DatabaseModule],
+  exports: [BinActivitiesService],
 })
 export class BinActivitiesModule {}

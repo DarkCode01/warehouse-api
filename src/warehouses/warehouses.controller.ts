@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiCreatedResponse } from '@nestjs/swagger';
+import { BinsService } from 'src/bins/bins.service';
 import { HeatmapBinDto } from 'src/bins/dto/heatmap-bin.dto';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { StatGroupDto } from './dto/stat-warehouse.dto';
@@ -7,7 +8,10 @@ import { WarehousesService } from './warehouses.service';
 
 @Controller('warehouses')
 export class WarehousesController {
-  constructor(private readonly warehousesService: WarehousesService) {}
+  constructor(
+    private readonly warehousesService: WarehousesService,
+    private binsService: BinsService,
+  ) {}
 
   @Get(':id/heatmap')
   @ApiCreatedResponse({
@@ -35,5 +39,13 @@ export class WarehousesController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.warehousesService.findOne(id);
+  }
+
+  @Patch(':id/recompute')
+  async updateHeatmap(@Param('id') id: string) {
+    // Update all bins score
+    await this.binsService.bulkUpdateScore(id);
+
+    return this.warehousesService.getHeatmap(id);
   }
 }
