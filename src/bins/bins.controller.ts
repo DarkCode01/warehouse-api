@@ -14,14 +14,20 @@ export class BinsController {
     return this.binsService.create(createBinDto);
   }
 
+  // @Post(':binCode')
+  // async audit(@Param('binCode') binCode: string) {
+  //   const bin = await this.binsService.findOneByBinCode(binCode);
+  //   return;
+  // }
+
   @Get()
   findAll() {
     return this.binsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.binsService.findOne(id);
+  @Get('code/:binCode')
+  findOne(@Param('binCode') binCode: string) {
+    return this.binsService.findOneByBinCode(binCode);
   }
 
   @Patch(':id')

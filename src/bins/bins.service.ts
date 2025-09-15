@@ -31,6 +31,12 @@ export class BinsService {
     });
   }
 
+  findOneByBinCode(binCode: string) {
+    return this.dbService.bin.findUnique({
+      where: { code: binCode },
+    });
+  }
+
   findAllByWarehouse(warehouseId: string) {
     return this.dbService.bin.findMany({
       where: { warehouse_id: warehouseId, is_active: true },
@@ -140,5 +146,18 @@ export class BinsService {
       binsUpdated: updated,
       binsNotUpdated: errors,
     };
+  }
+
+  async findAllHighestRiskAndLimit(warehouseId: string, take: number) {
+    return this.dbService.bin.findMany({
+      where: { warehouse_id: warehouseId },
+      select: {
+        id: true,
+      },
+      orderBy: {
+        risk_score: 'desc',
+      },
+      take,
+    });
   }
 }

@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { AuditTasksModule } from 'src/audit-tasks/audit-tasks.module';
+import { BinsModule } from 'src/bins/bins.module';
 import { DatabaseModule } from 'src/database/database.module';
 import { AuditPlansController } from './audit-plans.controller';
 import { AuditPlansService } from './audit-plans.service';
@@ -6,6 +8,6 @@ import { AuditPlansService } from './audit-plans.service';
 @Module({
   controllers: [AuditPlansController],
   providers: [AuditPlansService],
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, BinsModule, AuditTasksModule],
 })
 export class AuditPlansModule {}

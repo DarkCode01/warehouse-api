@@ -1,15 +1,33 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+
+import { BinsService } from 'src/bins/bins.service';
 import { AuditPlansService } from './audit-plans.service';
 import { CreateAuditPlanDto } from './dto/create-audit-plan.dto';
 import { UpdateAuditPlanDto } from './dto/update-audit-plan.dto';
 
 @Controller('plans')
 export class AuditPlansController {
-  constructor(private readonly auditPlansService: AuditPlansService) {}
+  constructor(
+    private readonly auditPlansService: AuditPlansService,
+    private binsService: BinsService,
+  ) {}
 
-  @Post()
-  create(@Body() createAuditPlanDto: CreateAuditPlanDto) {
-    return this.auditPlansService.create(createAuditPlanDto);
+  @Post(':warehouseId/generate/:count')
+  async create(
+    @Param('warehouseId') warehouseId: string,
+    @Param('count') count: string,
+    @Body() createAuditPlanDto: CreateAuditPlanDto,
+  ) {
+    const binIds = await this.binsService.findAllHighestRiskAndLimit(
+      warehouseId,
+      +count || 10,
+    );
+
+    return this.auditPlansService.create({
+      createAuditPlanDto,
+      warehouseId,
+      binIds,
+    });
   }
 
   @Get(':warehouseId/all')

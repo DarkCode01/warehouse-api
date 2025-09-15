@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma, PrismaClient } from 'generated/prisma';
+import { DefaultArgs } from 'generated/prisma/runtime/library';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateAuditTaskDto } from './dto/create-audit-task.dto';
 import { UpdateAuditTaskDto } from './dto/update-audit-task.dto';
+
+type Transaction = Omit<
+  PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'
+>;
 
 @Injectable()
 export class AuditTasksService {
@@ -10,6 +17,17 @@ export class AuditTasksService {
   create(createAuditTaskDto: CreateAuditTaskDto) {
     return this.dbService.auditTask.create({
       data: createAuditTaskDto,
+    });
+  }
+
+  createBulk(tasksDto: Array<CreateAuditTaskDto>, transaction?: Transaction) {
+    let tx: DatabaseService | Transaction = this.dbService;
+
+    if (transaction) tx = transaction;
+
+    return tx.auditTask.createMany({
+      data: tasksDto,
+      skipDuplicates: true,
     });
   }
 
