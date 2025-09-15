@@ -44,4 +44,6 @@ export class UpdateBinDto extends PartialType(CreateBinDto) {
   @IsUUID()
   @IsNotEmpty()
   warehouse_id: string;
+
+  last_audit_date: Date;
 }

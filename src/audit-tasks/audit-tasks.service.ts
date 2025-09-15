@@ -20,6 +20,13 @@ export class AuditTasksService {
     });
   }
 
+  findOne(id: string) {
+    return this.dbService.auditTask.findUnique({
+      where: { id },
+      include: { bin: true },
+    });
+  }
+
   createBulk(tasksDto: Array<CreateAuditTaskDto>, transaction?: Transaction) {
     let tx: DatabaseService | Transaction = this.dbService;
 

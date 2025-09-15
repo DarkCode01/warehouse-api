@@ -4,7 +4,6 @@ import {
   IsNumber,
   IsPositive,
   IsString,
-  IsUUID,
   MaxLength,
 } from 'class-validator';
 import { AuditStatus } from 'generated/prisma';
@@ -20,10 +19,6 @@ export class CreateAuditResultDto {
   actual_count: number;
 
   @ApiProperty()
-  @IsNumber()
-  discrepancy: number;
-
-  @ApiProperty()
   @IsEnum(AuditStatus)
   status: AuditStatus;
 
@@ -32,11 +27,8 @@ export class CreateAuditResultDto {
   @MaxLength(30)
   notes?: string;
 
-  @ApiProperty()
-  @IsUUID()
+  // internal values
   taskId: string;
-
-  @ApiProperty()
-  @IsUUID()
   bin_id: string;
+  discrepancy: number;
 }

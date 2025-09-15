@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 
+import { CreateAuditResultDto } from 'src/audit-results/dto/create-audit-result.dto';
 import { BinsService } from 'src/bins/bins.service';
 import { AuditPlansService } from './audit-plans.service';
 import { CreateAuditPlanDto } from './dto/create-audit-plan.dto';
@@ -46,5 +47,16 @@ export class AuditPlansController {
     @Body() updateAuditPlanDto: UpdateAuditPlanDto,
   ) {
     return this.auditPlansService.update(id, updateAuditPlanDto);
+  }
+
+  @Patch(':id/audit/:taskId')
+  audit(
+    @Param('taskId') taskId: string,
+    @Body() taskAuditData: CreateAuditResultDto,
+  ) {
+    return this.auditPlansService.auditTask({
+      taskId,
+      auditData: taskAuditData,
+    });
   }
 }

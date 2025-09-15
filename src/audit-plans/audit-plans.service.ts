@@ -1,7 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import * as dayjs from 'dayjs';
-import { PlanStatus, TaskStatus } from 'generated/prisma';
+import {
+  ActivityType,
+  AuditStatus,
+  PlanStatus,
+  TaskStatus,
+} from 'generated/prisma';
+import { AuditResultsService } from 'src/audit-results/audit-results.service';
+import { CreateAuditResultDto } from 'src/audit-results/dto/create-audit-result.dto';
 import { AuditTasksService } from 'src/audit-tasks/audit-tasks.service';
+import { BinActivitiesService } from 'src/bin-activities/bin-activities.service';
+import { BinsService } from 'src/bins/bins.service';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateAuditPlanDto } from './dto/create-audit-plan.dto';
 import { UpdateAuditPlanDto } from './dto/update-audit-plan.dto';
@@ -11,6 +20,9 @@ export class AuditPlansService {
   constructor(
     private dbService: DatabaseService,
     private tasksService: AuditTasksService,
+    private taskResultsService: AuditResultsService,
+    private binsService: BinsService,
+    private binActivitiesService: BinActivitiesService,
   ) {}
 
   async create({
@@ -72,5 +84,57 @@ export class AuditPlansService {
       where: { id },
       data: updateAuditPlanDto,
     });
+  }
+
+  async auditTask({
+    auditData,
+    taskId,
+  }: {
+    taskId: string;
+    auditData: CreateAuditResultDto;
+  }) {
+    const task = await this.tasksService.findOne(taskId);
+    const resultPassed = auditData.status === AuditStatus.PASS;
+    const newAuditDate = dayjs().toDate();
+
+    if (!task) return null;
+
+    // Prepare payload
+    auditData.taskId = taskId;
+    auditData.bin_id = task.bin_id;
+    auditData.discrepancy = auditData.expected_count - auditData.actual_count;
+
+    // creating result
+    await this.taskResultsService.create(auditData);
+
+    if (resultPassed) {
+      await this.tasksService.update(taskId, {
+        status: TaskStatus.DONE,
+      });
+    }
+
+    // update bin audit date
+
+    await this.binsService.update(task.bin_id, {
+      last_audit_date: newAuditDate,
+    });
+    task.bin.last_audit_date = newAuditDate;
+
+    // recompute bin score
+    await this.binsService.updateScore(task.bin);
+
+    // create bin activity
+    await this.binActivitiesService.create({
+      type: ActivityType.AUDIT,
+      quantity: auditData.actual_count,
+      notes: auditData.notes,
+      bin_id: task.bin_id,
+    });
+
+    return {
+      taskAudited: taskId,
+      resultStatus: auditData.status,
+      taskStatus: resultPassed ? TaskStatus.DONE : TaskStatus.PENDING,
+    };
   }
 }
