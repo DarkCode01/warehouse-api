@@ -143,7 +143,7 @@ enum TaskStatus {
 
 model AuditResult {
   id            String      @id @default(uuid())
-  taskId        String?
+  taskId        String? @unique
   bin_id         String
   expected_count Int
   actual_count   Int
@@ -151,7 +151,7 @@ model AuditResult {
   status        AuditStatus
   notes         String?
   
-  task          AuditTask? @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  task          AuditTask? @relation(fields: [taskId], references: [id], onDelete: Cascade)
   bin           Bin       @relation(fields: [bin_id], references: [id], onDelete: Cascade)
   
   @@map("audit_results")
