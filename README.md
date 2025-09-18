@@ -1,9 +1,6 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <img src="https://cdn.prod.website-files.com/6854b7f27d4933db78c34f9c/68715df980a73ac9d30e9586_Rivero%20Logo-15%20(1).png" width="120" alt="Nest Logo" />
 </p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
 
   <p align="center">App that helps warehouse teams decide which locations (“bins”) to audit
 first when checking inventory.</p>
