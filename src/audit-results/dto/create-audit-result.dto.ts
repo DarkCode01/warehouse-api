@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
   IsNumber,
+  IsOptional,
   IsPositive,
   IsString,
   MaxLength,
@@ -25,6 +26,7 @@ export class CreateAuditResultDto {
   @ApiProperty()
   @IsString()
   @MaxLength(30)
+  @IsOptional()
   notes?: string;
 
   // internal values

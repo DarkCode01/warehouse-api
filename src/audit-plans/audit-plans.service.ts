@@ -67,12 +67,52 @@ export class AuditPlansService {
   findAll(warehouseId: string) {
     return this.dbService.auditPlan.findMany({
       where: { warehouse_id: warehouseId },
+      select: {
+        id: true,
+        name: true,
+        created_at: true,
+        updated_at: true,
+        status: true,
+        description: true,
+        tasks: {
+          select: {
+            status: true,
+            id: true,
+            bin_id: true,
+            bin: true,
+            results: true,
+          },
+        },
+      },
+      orderBy: {
+        updated_at: 'desc',
+      },
     });
   }
 
   findOne(id: string) {
     return this.dbService.auditPlan.findUnique({
       where: { id },
+      include: {
+        tasks: {
+          select: {
+            status: true,
+            id: true,
+            bin_id: true,
+            bin: true,
+            results: true,
+          },
+        },
+      },
+    });
+  }
+
+  findCurrent(warehouseId: string) {
+    return this.dbService.auditPlan.findFirst({
+      where: {
+        warehouse_id: warehouseId,
+        status: PlanStatus.ACTIVE,
+      },
       include: {
         tasks: true,
       },

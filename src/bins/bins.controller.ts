@@ -1,5 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { ApiCreatedResponse } from '@nestjs/swagger';
+import { CreateAuditResultDto } from 'src/audit-results/dto/create-audit-result.dto';
 import { BinsService } from './bins.service';
 import { CreateBinDto } from './dto/create-bin.dto';
 import { RiskScoreBin } from './dto/score-bin.dto';
@@ -14,20 +23,28 @@ export class BinsController {
     return this.binsService.create(createBinDto);
   }
 
-  // @Post(':binCode')
-  // async audit(@Param('binCode') binCode: string) {
-  //   const bin = await this.binsService.findOneByBinCode(binCode);
-  //   return;
-  // }
+  @Post('audit')
+  audit(@Body() binToAudit: CreateAuditResultDto) {
+    return this.binsService.audit(binToAudit);
+  }
 
   @Get()
   findAll() {
     return this.binsService.findAll();
   }
 
+  @Get('warehouse/:warehouseId')
+  findAllByWarehouse(@Param('warehouseId') warehouseId: string) {
+    return this.binsService.findAllHighestRiskAndLimit(warehouseId, 30);
+  }
+
   @Get('code/:binCode')
-  findOne(@Param('binCode') binCode: string) {
-    return this.binsService.findOneByBinCode(binCode);
+  async findOne(@Param('binCode') binCode: string) {
+    const bin = await this.binsService.findOneByBinCode(binCode);
+
+    if (!bin) throw new NotFoundException(`Bin not found by code ${binCode}.`);
+
+    return bin;
   }
 
   @Patch(':id')

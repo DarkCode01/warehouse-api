@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Bin } from 'generated/prisma';
+import * as dayjs from 'dayjs';
+import { ActivityType, AuditStatus, Bin, TaskStatus } from 'generated/prisma';
+import { AuditResultsService } from 'src/audit-results/audit-results.service';
+import { CreateAuditResultDto } from 'src/audit-results/dto/create-audit-result.dto';
+import { AuditTasksService } from 'src/audit-tasks/audit-tasks.service';
 import { BinActivitiesService } from 'src/bin-activities/bin-activities.service';
 import { DatabaseService } from 'src/database/database.service';
 import { RiskScoreService } from 'src/risk-score/risk-score.service';
@@ -13,6 +17,8 @@ export class BinsService {
     private dbService: DatabaseService,
     private binActivitiesService: BinActivitiesService,
     private riskScoreService: RiskScoreService,
+    private auditResultsService: AuditResultsService,
+    private auditTasksService: AuditTasksService,
   ) {}
 
   create(createBinDto: CreateBinDto): Promise<Bin> {
@@ -34,6 +40,29 @@ export class BinsService {
   findOneByBinCode(binCode: string) {
     return this.dbService.bin.findUnique({
       where: { code: binCode },
+      select: {
+        id: true,
+        code: true,
+        position: true,
+        risk_score: true,
+        pallet_count: true,
+        capacity: true,
+        last_audit_date: true,
+        audit_factor: true,
+        activity_factor: true,
+        adjustment_factor: true,
+        rack: {
+          select: {
+            number: true,
+            aisle: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 
@@ -47,6 +76,7 @@ export class BinsService {
         risk_score: true,
         pallet_count: true,
         capacity: true,
+        last_audit_date: true,
         rack: {
           select: {
             number: true,
@@ -150,14 +180,79 @@ export class BinsService {
 
   async findAllHighestRiskAndLimit(warehouseId: string, take: number) {
     return this.dbService.bin.findMany({
-      where: { warehouse_id: warehouseId },
-      select: {
-        id: true,
+      where: {
+        warehouse_id: warehouseId,
+        AuditTask: {
+          none: {
+            status: 'PENDING',
+          },
+        },
       },
       orderBy: {
         risk_score: 'desc',
       },
       take,
     });
+  }
+
+  async findAllByIds(ids: Array<string>) {
+    return this.dbService.bin.findMany({
+      where: {
+        id: { in: ids },
+      },
+      select: {
+        id: true,
+      },
+      orderBy: {
+        risk_score: 'desc',
+      },
+    });
+  }
+
+  async audit(auditData: CreateAuditResultDto) {
+    const bin = await this.findOne(auditData.bin_id);
+    const newAuditDate = dayjs().toDate();
+
+    if (!bin) return null;
+
+    // Prepare payload
+    auditData.discrepancy = auditData.expected_count - auditData.actual_count;
+
+    // verify if bin has task to update it
+    if (auditData.status === AuditStatus.PASS) {
+      const task = await this.auditTasksService.findOneActiveByBin(bin.id);
+
+      if (task) {
+        await this.auditTasksService.update(task.id, {
+          status: TaskStatus.DONE,
+        });
+      }
+    }
+
+    // creating result
+    await this.auditResultsService.create(auditData);
+
+    // update bin audit date
+    await this.update(bin.id, {
+      last_audit_date: newAuditDate,
+    });
+    bin.last_audit_date = newAuditDate;
+
+    // recompute bin score
+    await this.updateScore(bin);
+
+    // create bin activity
+    await this.binActivitiesService.create({
+      type: ActivityType.AUDIT,
+      quantity: auditData.actual_count,
+      notes: auditData.notes,
+      bin_id: bin.id,
+    });
+
+    return {
+      bin_id: bin.id,
+      resultStatus: auditData.status,
+      taskStatus: auditData.status,
+    };
   }
 }

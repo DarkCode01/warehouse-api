@@ -46,6 +46,6 @@ export class WarehousesController {
     // Update all bins score
     await this.binsService.bulkUpdateScore(id);
 
-    return this.warehousesService.getHeatmap(id);
+    return { success: true };
   }
 }

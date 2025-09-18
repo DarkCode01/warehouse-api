@@ -41,6 +41,11 @@ export class AuditPlansController {
     return this.auditPlansService.findOne(id);
   }
 
+  @Get(':warehouseId/recent')
+  async findOneRecent(@Param('warehouseId') warehouseId: string) {
+    return this.auditPlansService.findCurrent(warehouseId);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

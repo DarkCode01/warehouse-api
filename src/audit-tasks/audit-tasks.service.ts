@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, PrismaClient } from 'generated/prisma';
+import { Prisma, PrismaClient, TaskStatus } from 'generated/prisma';
 import { DefaultArgs } from 'generated/prisma/runtime/library';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateAuditTaskDto } from './dto/create-audit-task.dto';
@@ -24,6 +24,15 @@ export class AuditTasksService {
     return this.dbService.auditTask.findUnique({
       where: { id },
       include: { bin: true },
+    });
+  }
+
+  findOneActiveByBin(binId: string) {
+    return this.dbService.auditTask.findFirst({
+      where: {
+        bin_id: binId,
+        status: TaskStatus.PENDING,
+      },
     });
   }
 

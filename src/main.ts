@@ -7,6 +7,9 @@ import { ResponseInterceptor } from './response/response.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // enable cors
+  app.enableCors();
+
   // Validation
   app.useGlobalPipes(new ValidationPipe());
 
