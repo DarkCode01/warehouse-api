@@ -19,6 +19,7 @@ export class WarehousesController {
     type: HeatmapBinDto,
   })
   getHeatmap(@Param('id') id: string) {
+    console.log('asdasd');
     return this.warehousesService.getHeatmap(id);
   }
 
