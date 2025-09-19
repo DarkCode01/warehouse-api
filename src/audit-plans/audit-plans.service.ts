@@ -116,6 +116,9 @@ export class AuditPlansService {
       include: {
         tasks: true,
       },
+      orderBy: {
+        created_at: 'desc',
+      },
     });
   }
 
